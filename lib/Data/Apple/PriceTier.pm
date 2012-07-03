@@ -4,7 +4,7 @@ use warnings;
 use Carp;
 use 5.008001;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 our %COUNTRIES = (
     'U.S.'        => 0,
@@ -233,6 +233,7 @@ sub price_for {
     my $tier = $args{tier}
         or croak 'tier parameter is required';
 
+    return 0 if $tier == 0;
     $PRICE_MATRIX->[ $tier - 1 ][ $code ];
 }
 
@@ -243,7 +244,32 @@ sub proceed_for {
     my $tier = $args{tier}
         or croak 'tier parameter is required';
 
+    return 0 if $tier == 0;
     $PROCEED_MATRIX->[ $tier - 1 ][ $code ];
+}
+
+sub prices {
+    my ($class, %args) = @_;
+    my $code = $class->_get_code(%args);
+
+    my @prices;
+    for my $tier (1 .. scalar @$PRICE_MATRIX) {
+        push @prices, $PRICE_MATRIX->[ $tier - 1 ][ $code ];
+    }
+
+    @prices;
+}
+
+sub proceeds {
+    my ($class, %args) = @_;
+    my $code = $class->_get_code(%args);
+
+    my @proceeds;
+    for my $tier (1 .. scalar @$PROCEED_MATRIX) {
+        push @proceeds, $PROCEED_MATRIX->[ $tier - 1 ][ $code ];
+    }
+
+    @proceeds;
 }
 
 sub supported_countries {
@@ -275,11 +301,13 @@ sub new {
 
 sub price_for_tier {
     my ($self, $tier) = @_;
+    return 0 if $tier == 0;
     $PRICE_MATRIX->[ $tier - 1 ][ $self->{code} ];
 }
 
 sub proceed_for_tier {
     my ($self, $tier) = @_;
+    return 0 if $tier == 0;
     $PROCEED_MATRIX->[ $tier - 1 ][ $self->{code} ];
 }
 
